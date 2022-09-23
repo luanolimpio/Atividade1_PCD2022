@@ -6,24 +6,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-# define geracoes 2000
-# define num_threads 1
-# define dimensoes 2048
+# define GERACOES 2
+# define NUM_THREADS 1
+# define DIMENSOES 50
+# define POSITION(x) (x+DIMENSOES)%DIMENSOES
 
 void inicializa_tabuleiro1(int ** grid)
 {
     //GLIDER
-
-    int i, j;
-
-    for(i=0; i<dimensoes; i++)
-    {
-        for(j=0; j<dimensoes; j++)
-        {
-            grid[i][j]=0;
-        }
-    }
-
     grid[1][2]=1;
     grid[2][3]=1;
     grid[3][1]=1;
@@ -40,11 +30,11 @@ void inicializa_tabuleiro1(int ** grid)
 int varredura(int i, int j, int ** grid)
 {
     int k, l, count = 0;
-    for (k = i-1; k < i+1; k++)
+    for (k = i-1; k <= i+1; k++)
     {
-        for(l = j-1; l < j+1; l++)
+        for(l = j-1; l <= j+1; l++)
         {
-            count += grid[(k+dimensoes)%dimensoes][(l+dimensoes)%dimensoes];
+            count += grid[POSITION(k)][POSITION(l)];
         }
     }
     return count;
@@ -52,67 +42,111 @@ int varredura(int i, int j, int ** grid)
 
 
 
-void jogo_da_vida(int ** grid, int ** newGrid)
+void jogo_da_vida(int *** grid, int *** newGrid)
 {
-    int i, j, count, **aux;
+    int i, j, count = 0, **aux;
 
-    for(i=0; i<dimensoes; i++)
+    for(i = 0; i < DIMENSOES; i++)
     {
-        for(j=0; j<dimensoes; j++)
+        for(j = 0; j < DIMENSOES; j++)
+        {
+           printf("%d", grid[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+
+    // for(i = 0; i < DIMENSOES; i++)
+    // {
+    //     for(j = 0; j < DIMENSOES; j++)
+    //     {
+    //        count += grid[i][j];
+    //     }
+    // }
+    // printf("%d\n", count);
+
+    count = 0;
+
+    for(i=0; i<DIMENSOES; i++)
+    {
+        for(j=0; j<DIMENSOES; j++)
         {
             count = varredura(i, j, grid);
-            if((count < 2 || count >= 4) && grid[i][j] == 1)
+            if((count == 2 || count == 3) && grid[i][j] == 1)
+            {
+                newGrid[i][j] = 1;
+            }
+            else if(count == 3 && grid[i][j] == 0)
+            {
+                newGrid[i][j] = 1;
+            }
+            else 
             {
                 newGrid[i][j] = 0;
             }
-            else if((count == 2 || count == 3) && grid[i][j] == 1)
-            {
-                newGrid[i][j] = 1;
-            }
-            else if(count == 3)
-            {
-                newGrid[i][j] = 1;
-            }
         }
     }
+
+    for(i = 0; i < DIMENSOES; i++)
+    {
+        for(j = 0; j < DIMENSOES; j++)
+        {
+           printf("%d", newGrid[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+
     aux = grid;
     grid = newGrid;
     newGrid = aux;
+    aux = NULL;
 }
 
-int ** inicia_matriz()
+int ** inicia_grid()
 {
     int i;
-    int ** matriz = (int **) calloc(sizeof(int *), dimensoes);
-    for(i = 0; i < dimensoes; i++)
+    int ** grid = (int **) calloc(sizeof(int *), DIMENSOES);
+    for(i = 0; i < DIMENSOES; i++)
     {
-        matriz[i] = (int *)calloc(sizeof(int), dimensoes);
+        grid[i] = (int *) calloc(sizeof(int), DIMENSOES);
     }
-    return matriz;
+    return grid;
+}
+
+void libera_grid(int ** grid)
+{
+    int i;
+    for(i = 0; i < DIMENSOES; i++)
+        free(grid[i]);
+    free(grid);
 }
 
 int main()
 {
     int i, j, count = 0;
-    int ** matriz, **matriz2;
+    int ** grid, **newGrid;
 
-    matriz = inicia_matriz();
-    inicializa_tabuleiro1(matriz);
-    matriz2 = inicia_matriz();
+    grid = inicia_grid();
+    inicializa_tabuleiro1(grid);
+    newGrid = inicia_grid();
     printf("MATRIZES INICIADAS\n");
 
-    for(i=0; i<geracoes; i++)
+    for(i = 0; i < DIMENSOES; i++)
     {
-        jogo_da_vida(matriz, matriz2);
-    }
-    for(i = 0; i < dimensoes; i++)
-    {
-        for(j=0; j < dimensoes; j++)
+        for(j = 0; j < DIMENSOES; j++)
         {
-            count += matriz[i][j];
+            count += grid[i][j];
         }
     }
     printf("%d\n", count);
+
+    for(i=0; i < GERACOES; i++)
+    {
+        jogo_da_vida(&grid, &newGrid);
+    }
+    libera_grid(grid);
+    libera_grid(newGrid);
     return 0;
 }
 
