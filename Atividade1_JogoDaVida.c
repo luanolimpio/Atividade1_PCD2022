@@ -3,7 +3,6 @@
 // Brendo Yuki Katagi - RA 120.682
 
 // Atividade 1 - Programacao Concorrente e Distribuida
-// Arquivo Jogo da Vida - PThreads
 
 #include <stdio.h>
 #include <stdlib.h>
