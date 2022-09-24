@@ -50,10 +50,10 @@ void jogo_da_vida(int ** grid, int ** newGrid) {
         count = varredura(i, j, grid);
         if((count == 2 || count == 3) && grid[i][j] == 1) {
             newGrid[i][j] = 1;
-        } else if(count == 3 && grid[i][j] == 0) {
+        } else if((count == 2 || count == 6) && grid[i][j] == 0) {
             newGrid[i][j] = 1;
         } else {
-          newGrid[i][j] = 0;
+            newGrid[i][j] = 0;
         }
       }
   }
