@@ -1,8 +1,9 @@
+// Brendo Yuki Katagi - RA 120.682
 // Luan Olimpio Claro da Costa - RA 120.855
 // Matheus Anido Pereira Coimbra - RA 104.112
 
 // Atividade 1 - Programacao Concorrente e Distribuida
-// Arquivo Jogo da Vida - OpenMP
+// Jogo da Vida - OpenMP
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,25 +40,21 @@ int varredura(int i, int j, int ** grid) {
   return count;
 }
 
-
-
 void jogo_da_vida(int ** grid, int ** newGrid) {
   int i, j, count = 0;
-
-  count = 0;
 
   #pragma omp parallel for private(i,j, count) shared(grid, newGrid)
   for(i=0; i<DIMENSOES; i++){
     for(j=0; j<DIMENSOES; j++) {
-        count = varredura(i, j, grid);
-        if((count == 2 || count == 3) && grid[i][j] == 1) {
-            newGrid[i][j] = 1;
-        } else if((count == 3 || count == 6) && grid[i][j] == 0) {
-            newGrid[i][j] = 1;
-        } else {
-          newGrid[i][j] = 0;
-        }
+      count = varredura(i, j, grid);
+      if((count == 2 || count == 3) && grid[i][j] == 1) {
+        newGrid[i][j] = 1;
+      } else if((count == 3 || count == 6) && grid[i][j] == 0) {
+        newGrid[i][j] = 1;
+      } else {
+        newGrid[i][j] = 0;
       }
+    }
   }
 }
 
@@ -102,6 +99,7 @@ int main() {
   printf("%d\n", count);
   libera_grid(grid);
   libera_grid(newGrid);
+  aux = NULL;
   return 0;
 }
 
