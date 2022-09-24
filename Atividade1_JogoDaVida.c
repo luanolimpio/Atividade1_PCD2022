@@ -43,23 +43,6 @@ int varredura(int i, int j, int ** grid) {
 void jogo_da_vida(int ** grid, int ** newGrid) {
   int i, j, count = 0;
 
-  // for(i = 0; i < DIMENSOES; i++) {
-  //   for(j = 0; j < DIMENSOES; j++) {
-  //     printf("%d", grid[i][j]);
-  //   }
-  //   printf("\n");
-  // }
-  // printf("\n");
-
-  // for(i = 0; i < DIMENSOES; i++)
-  // {
-  //     for(j = 0; j < DIMENSOES; j++)
-  //     {
-  //         count += grid[i][j];
-  //     }
-  // }
-  // printf("%d\n", count);
-
   count = 0;
 
   for(i=0; i<DIMENSOES; i++){
@@ -74,13 +57,6 @@ void jogo_da_vida(int ** grid, int ** newGrid) {
         }
       }
   }
-
-  // for(i = 0; i < DIMENSOES; i++)  {
-  //   for(j = 0; j < DIMENSOES; j++) 
-  //     printf("%d", newGrid[i][j]);
-  //   printf("\n");
-  // }
-  // printf("\n");
 }
 
 int ** inicia_grid() {
