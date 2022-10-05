@@ -10,7 +10,6 @@
 #include <omp.h>
 
 # define GERACOES 2000
-# define NUM_THREADS 8
 # define DIMENSOES 2048
 # define POSITION(x) (x+DIMENSOES)%DIMENSOES
 
@@ -88,9 +87,6 @@ int main() {
   newGrid = inicia_grid();
 
   inicializa_tabuleiro1(grid);
-  omp_set_num_threads(NUM_THREADS);
-
-  printf("MATRIZES INICIADAS\n");
 
   itime = omp_get_wtime();
   for(i=0; i < GERACOES; i++) {
