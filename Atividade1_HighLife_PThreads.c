@@ -3,7 +3,7 @@
 // Matheus Anido Pereira Coimbra - RA 104.112
 
 // Atividade 1 - Programacao Concorrente e Distribuida
-// Jogo da Vida - OpenMP
+// High Life - PThreads
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,13 +15,13 @@
 # define NUM_THREADS 8
 # define DIMENSOES 2048
 # define POSITION(x) (x+DIMENSOES)%DIMENSOES
-# define LINHAS_POR_THREAD DIMENSOES/NUM_THREADS;
-# define RESTO DIMENSOES%NUM_THREADS;
+# define LINHAS_POR_THREAD DIMENSOES/NUM_THREADS
+# define RESTO DIMENSOES%NUM_THREADS
 
 int ** grid, **newGrid;
-struct Thread_data {
+typedef struct Thread_data {
     int inicio, fim, g;
-};
+} Thread_data;
 
 
 void inicializa_tabuleiro1(int ** grid) {
@@ -50,10 +50,11 @@ int varredura(int i, int j, int ** grid) {
   return count;
 }
 
-void jogo_da_vida(void* t_data) {
+void * jogo_da_vida(void* ptr) {
+    Thread_data * t_data = (Thread_data *) ptr;
     int i, j, count = 0;
 
-    for(i=t_data->inicio ; i<t_data->inicio; i++){
+    for(i=t_data->inicio ; i<t_data->fim; i++){
       for(j=0; j<DIMENSOES; j++) {
         count = varredura(i, j, grid);
         if((count == 2 || count == 3) && grid[i][j] == 1) {
@@ -65,8 +66,10 @@ void jogo_da_vida(void* t_data) {
         }
       }
     }
-    if(t_data->g == 0)
+    if(t_data->g == 0){
+      printf("%d %d %d\n", t_data->inicio, t_data->fim, t_data);
       printf("N Threads: %d\n", NUM_THREADS);
+    }
 
 }
 
@@ -88,44 +91,35 @@ void libera_grid(int ** grid) {
 
 int main() {
   int i, j, count = 0, thread_num;
-  int inicio = 0; fim = LINHAS_POR_THREAD + RESTO; //primeira thread executa linhas a mais
-  int **aux;
-  pthread_barrier_t barreira; // Cria barreira
-  pthread_barrier_init(&barreira, NULL, NUM_THREADS); //inicializa barreira
+  int **aux, inicio, fim;
   struct timeval i_time, f_time, exec_time;
   pthread_t threads[NUM_THREADS];
+  Thread_data t_data[NUM_THREADS];
+  for(thread_num = 0; thread_num < NUM_THREADS; thread_num++){
+    t_data[thread_num].inicio = thread_num * (LINHAS_POR_THREAD + RESTO);
+    t_data[thread_num].fim = (thread_num+1) * (LINHAS_POR_THREAD + RESTO);
+  }
 
   grid = inicia_grid();
   newGrid = inicia_grid();
-
   inicializa_tabuleiro1(grid);
-  //omp_set_num_threads(NUM_THREADS);
 
-  printf("MATRIZES INICIADAS\n");
-
-  //itime = omp_get_wtime();
-  gettimeofday(i_time, NULL);
+  gettimeofday(&i_time, NULL);
   for(i=0; i < GERACOES; i++) {
     for(thread_num = 0; thread_num < NUM_THREADS; thread_num++){
-
-        Thread_data t_data = {inicio, fim, i};
-
-        pthread_create(&threads[thread_num], NULL, jogo_da_vida, &t_data);
-
-        inicio += fim;
-        fim += LINHAS_POR_THREAD;
+        t_data[thread_num].g = i;
+        pthread_create(&threads[thread_num], NULL, &jogo_da_vida, &t_data[thread_num]);
     }
 
-    pthread_barrier_wait(&barreira); // Aguarda a execução de todas as threads
+    for(thread_num = 0; thread_num < NUM_THREADS; thread_num++){
+      pthread_join(threads[thread_num], NULL);
+    }
     aux = grid;
     grid = newGrid;
     newGrid = aux;
-
   }
-  pthread_exit(NULL);
-  gettimeofday(f_time, NULL);
+  gettimeofday(&f_time, NULL);
   timersub(&f_time, &i_time, &exec_time);
-
 
   for(i = 0; i < DIMENSOES; i++) {
     for(j = 0; j < DIMENSOES; j++) {
@@ -133,7 +127,7 @@ int main() {
     }
   }
   printf("%d\n", count);
-  printf("Tempo de execucao: %f\n", exec_time);
+  printf("Tempo de execucao: %ld.%06ld\n", exec_time.tv_sec, exec_time.tv_usec);
   libera_grid(grid);
   libera_grid(newGrid);
   aux = NULL;

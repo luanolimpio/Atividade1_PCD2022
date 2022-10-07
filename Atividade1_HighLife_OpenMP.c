@@ -3,7 +3,7 @@
 // Matheus Anido Pereira Coimbra - RA 104.112
 
 // Atividade 1 - Programacao Concorrente e Distribuida
-// Jogo da Vida - OpenMP
+// High Life - OpenMP
 
 #include <stdio.h>
 #include <stdlib.h>
