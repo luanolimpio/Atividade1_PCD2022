@@ -12,7 +12,7 @@
 #include <time.h>
 
 # define GERACOES 2000
-# define NUM_THREADS 8
+# define NUM_THREADS 12
 # define DIMENSOES 2048
 # define POSITION(x) (x+DIMENSOES)%DIMENSOES
 # define LINHAS_POR_THREAD DIMENSOES/NUM_THREADS
@@ -67,7 +67,6 @@ void * jogo_da_vida(void* ptr) {
       }
     }
     if(t_data->g == 0){
-      printf("%d %d %d\n", t_data->inicio, t_data->fim, t_data);
       printf("N Threads: %d\n", NUM_THREADS);
     }
 
@@ -90,14 +89,19 @@ void libera_grid(int ** grid) {
 }
 
 int main() {
-  int i, j, count = 0, thread_num;
+  int i, j, k, count = 0, thread_num;
   int **aux, inicio, fim;
   struct timeval i_time, f_time, exec_time;
   pthread_t threads[NUM_THREADS];
   Thread_data t_data[NUM_THREADS];
   for(thread_num = 0; thread_num < NUM_THREADS; thread_num++){
-    t_data[thread_num].inicio = thread_num * (LINHAS_POR_THREAD + RESTO);
-    t_data[thread_num].fim = (thread_num+1) * (LINHAS_POR_THREAD + RESTO);
+    if(thread_num == 0) {
+      t_data[thread_num].inicio = 0;
+      t_data[thread_num].fim = LINHAS_POR_THREAD + RESTO;
+    } else {
+      t_data[thread_num].inicio = thread_num * (LINHAS_POR_THREAD) + RESTO;
+      t_data[thread_num].fim = (thread_num+1) * (LINHAS_POR_THREAD) + RESTO;
+    }
   }
 
   grid = inicia_grid();
@@ -114,6 +118,17 @@ int main() {
     for(thread_num = 0; thread_num < NUM_THREADS; thread_num++){
       pthread_join(threads[thread_num], NULL);
     }
+
+    if(i < 5){
+      for(j = 0; j < 50; j++) {
+        for(k = 0; k < 50; k++) {
+          printf("%d", grid[j][k]);
+        }
+        printf("\n");
+      }
+      printf("\n");
+    }
+
     aux = grid;
     grid = newGrid;
     newGrid = aux;

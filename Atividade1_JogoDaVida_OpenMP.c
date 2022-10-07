@@ -10,8 +10,7 @@
 #include <omp.h>
 
 # define GERACOES 2000
-# define NUM_THREADS 1
-# define DIMENSOES 1025
+# define DIMENSOES 2048
 # define POSITION(x) (x+DIMENSOES)%DIMENSOES
 
 void inicializa_tabuleiro1(int ** grid) {
@@ -40,21 +39,26 @@ int varredura(int i, int j, int ** grid) {
   return count;
 }
 
-void jogo_da_vida(int ** grid, int ** newGrid) {
+void jogo_da_vida(int ** grid, int ** newGrid, int g) {
   int i, j, count = 0;
 
-  #pragma omp parallel for private(i,j, count) shared(grid, newGrid)
-  for(i=0; i<DIMENSOES; i++){
-    for(j=0; j<DIMENSOES; j++) {
+  #pragma omp parallel shared(grid, newGrid) private(i, j, count) 
+  {
+    #pragma omp for
+    for(i=0; i<DIMENSOES; i++){
+      for(j=0; j<DIMENSOES; j++) {
         count = varredura(i, j, grid);
         if((count == 2 || count == 3) && grid[i][j] == 1) {
-            newGrid[i][j] = 1;
+          newGrid[i][j] = 1;
         } else if(count == 3 && grid[i][j] == 0) {
-            newGrid[i][j] = 1;
+          newGrid[i][j] = 1;
         } else {
           newGrid[i][j] = 0;
         }
       }
+    }
+    if(g == 0) 
+      printf("N Threads: %d\n", omp_get_num_threads());
   }
 }
 
@@ -77,19 +81,22 @@ void libera_grid(int ** grid) {
 int main() {
   int i, j, count = 0;
   int ** grid, **newGrid, **aux;
+  double itime, ftime, exec_time;
 
   grid = inicia_grid();
   newGrid = inicia_grid();
 
   inicializa_tabuleiro1(grid);
-  printf("MATRIZES INICIADAS\n");
 
+  itime = omp_get_wtime();
   for(i=0; i < GERACOES; i++) {
-    jogo_da_vida(grid, newGrid);
+    jogo_da_vida(grid, newGrid, i);
     aux = grid;
     grid = newGrid;
     newGrid = aux;
   }
+  ftime = omp_get_wtime();
+  exec_time = ftime - itime;
 
   for(i = 0; i < DIMENSOES; i++) {
     for(j = 0; j < DIMENSOES; j++) {
@@ -97,9 +104,9 @@ int main() {
     }
   }
   printf("%d\n", count);
+  printf("Tempo de execucao: %f\n", exec_time);
   libera_grid(grid);
   libera_grid(newGrid);
   aux = NULL;
   return 0;
 }
-
